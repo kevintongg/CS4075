@@ -21,15 +21,15 @@ int Which_bin(float data, const float bin_maxes[], int bin_count, float min_meas
 void Print(float bin_maxes[], int bin_counts[], int bin_count, float min_meas);
 
 int main() {
-  int bin_count;
-  float min_meas;
-  float max_meas;
-  float *bin_maxes;
-  int *bin_counts;
+  int bin_count; // num of bins
+  float min_meas; // min meas min value for bin containing smallest values
+  float max_meas; // max meas max value for bin containing smallest values
+  float *bin_maxes; // array of bin count floats
+  int *bin_counts; // array of bin count ints
   int *loc_bin_cts;
-  int data_count;
+  int data_count; // num of measurements
   int local_data_count;
-  float *data;
+  float *data; // array of data count floats
   float *local_data;
   int my_rank;
   int comm_sz;
@@ -48,7 +48,7 @@ int main() {
   loc_bin_cts = malloc(bin_count * sizeof(int));
   data = malloc(data_count * sizeof(float));
   local_data = malloc(local_data_count * sizeof(float));
-
+  
   Set_bins(bin_maxes, loc_bin_cts, min_meas, max_meas, bin_count, my_rank, comm);
   Gen_data(local_data, local_data_count, data_count, min_meas, max_meas, my_rank, comm);
   Find_bin(bin_counts, local_data, loc_bin_cts, local_data_count, bin_maxes, bin_count, min_meas, comm);
