@@ -38,7 +38,7 @@ int main() {
   comm = MPI_COMM_WORLD;
   MPI_Init(NULL, NULL);
   MPI_Comm_size(comm, &comm_sz);
-  MPI_Comm_rank(comm, &comm_sz);
+  MPI_Comm_rank(comm, &my_rank);
 
   Get_input(&bin_count, &min_meas, &max_meas, &data_count, &local_data_count, my_rank, comm_sz, comm);
 
