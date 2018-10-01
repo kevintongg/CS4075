@@ -367,6 +367,6 @@ temp*
 # End of https://www.gitignore.io/api/eclipse,node,jetbrains,clion,phpstorm,webstorm,codeblocks,windows,macos
 
 cmake-*
-CMakeLists.txt
+#CMakeLists.txt
 main
 *.pyc
