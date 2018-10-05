@@ -42,7 +42,7 @@ int main() {
 
   Get_input(&bin_count, &min_meas, &max_meas, &data_count, &local_data_count, my_rank, comm_sz, comm);
 
-  // allocate memory for arrays
+  // memory allocation
   bin_maxes = malloc(bin_count * sizeof(float));
   bin_counts = malloc(bin_count * sizeof(int));
   loc_bin_cts = malloc(bin_count * sizeof(int));
@@ -56,6 +56,7 @@ int main() {
 
   if (my_rank == 0) {
     Print(bin_maxes, bin_counts, bin_count, min_meas);
+    printf("\nthe range is from %10.2f to %10.2f\n", min_meas, max_meas);
   }
 
   free(bin_maxes);
@@ -69,21 +70,22 @@ int main() {
   return 0;
 }
 
+// get user input
 void Get_input(int *bin_count, float *min_meas, float *max_meas, int *data_count, int *local_data_count, int my_rank,
                int comm_sz, MPI_Comm comm) {
   if (my_rank == 0) {
-    printf("Number of ints\n");
+    printf("number of bins\n");
     scanf("%d", bin_count);
-    printf("Min value\n");
+    printf("min value\n");
     scanf("%f", min_meas);
-    printf("Max value\n");
+    printf("max value\n");
     scanf("%f", max_meas);
     if (*max_meas < *min_meas) {
       float *temp = max_meas;
       max_meas = min_meas;
       min_meas = temp;
     }
-    printf("Number of ints\n");
+    printf("number of measurements\n");
     scanf("%d", data_count);
 
     // make data count a multiple of comm sz
@@ -91,6 +93,7 @@ void Get_input(int *bin_count, float *min_meas, float *max_meas, int *data_count
     *data_count = *data_count / comm_sz;
     printf("\n");
 
+    // broadcast variables to other processes
     MPI_Bcast(bin_count, 1, MPI_INT, 0, comm);
     MPI_Bcast(min_meas, 1, MPI_FLOAT, 0, comm);
     MPI_Bcast(max_meas, 1, MPI_FLOAT, 0, comm);
@@ -99,6 +102,7 @@ void Get_input(int *bin_count, float *min_meas, float *max_meas, int *data_count
   }
 }
 
+// generate random data
 void Gen_data(float *local_data, int local_data_count, int data_count, float min_meas, float max_meas, int my_rank,
               MPI_Comm comm) {
   float *data;
@@ -112,6 +116,7 @@ void Gen_data(float *local_data, int local_data_count, int data_count, float min
     }
   }
 
+  // scatter generated data to other processes
   MPI_Scatter(data, local_data_count, MPI_FLOAT, local_data, local_data_count, MPI_FLOAT, 0, comm);
 
   if (my_rank == 0) {
@@ -145,35 +150,35 @@ void Find_bin(int bin_counts[], float local_data[], int loc_bin_cts[], int local
 /* Find out the appropriate bin for each data */
 int Which_bin(float data, const float *bin_maxes, int bin_count, float min_meas) {
   int i;
-
+  
   for (i = 0; i < bin_count - 1; i++) {
     if (data < bin_maxes[i]) {
       break;
     }
   }
-
+  
   return i;
 }
 
+// print data
 void Print(float bin_maxes[], int bin_counts[], int bin_count, float min_meas) {
   int width = 40;
   int max = 0;
   int row_width;
-  int i;
-  int j;
 
-  for (i = 0; i < bin_count; i++) {
+  for (int i = 0; i < bin_count; i++) {
     if (bin_counts[i] > max) {
       max = bin_counts[i];
     }
   }
 
-  for (i = 0; i < bin_count; ++i) {
-    printf("%10.2f |", bin_maxes[i]);
+  for (int i = 0; i < bin_count; ++i) {
+    printf("%10.2f | ", bin_maxes[i]);
     row_width = (int) ((float) bin_counts[i] / (float) max * (float) width);
-    for (j = 0; j < row_width; ++j) {
+    for (int j = 0; j < row_width; ++j) {
       printf("#");
     }
+    printf(" ");
     printf("%d\n", bin_counts[i]);
   }
 }
