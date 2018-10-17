@@ -23,7 +23,6 @@ int main(void) {
   int comm_sz, my_rank;
   MPI_Comm comm;
   
-  
   MPI_Init(NULL, NULL);
   comm = MPI_COMM_WORLD;
   MPI_Comm_size(comm, &comm_sz);
@@ -96,7 +95,6 @@ void Read_n(int *n_p, int *local_n_p, int my_rank, int comm_sz,
     printf("what is the order of your vector: ");
     printf("\n");
     scanf("%d", n_p);
-    strtol()
   }
   
   // broadcast n
