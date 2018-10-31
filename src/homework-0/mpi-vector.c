@@ -3,17 +3,17 @@
 #include <string.h>
 #include <mpi.h>
 
-void Read_n(int* n_p, int* local_n_p, int my_rank, int comm_sz,
+void Read_n(int *n, int *local_n, int my_rank, int comm_sz,
             MPI_Comm comm);
 void Check_for_error(int local_ok, char fname[], char message[],
                      MPI_Comm comm);
-void Read_data(double local_vec1[], double local_vec2[], double* scalar_p,
+void Read_data(double local_matrix[], double local_vector[], double* scalar_p,
                int local_n, int my_rank, int comm_sz, MPI_Comm comm);
-void Print_vector(double local_vec[], int local_n, int n, char title[],
+void Print_vector(double local_vector[], int local_n, int n, char title[],
                   int my_rank, MPI_Comm comm);
-double Par_dot_product(double local_vec1[], double local_vec2[],
+double Par_dot_product(const double local_vec1[], const double local_vec2[],
                        int local_n, MPI_Comm comm);
-void Par_vector_scalar_mult(double local_vec[], double scalar,
+void Par_vector_scalar_mult(const double local_vec[], double scalar,
                             double local_result[], int local_n);
 
 int main(void) {
@@ -103,27 +103,27 @@ void Check_for_error(
 
 
 /*-------------------------------------------------------------------*/
-void Read_n(int* n_p, int* local_n_p, int my_rank, int comm_sz,
+void Read_n(int *n, int *local_n, int my_rank, int comm_sz,
             MPI_Comm comm) {
   int local_ok = 1;
   
   if (my_rank == 0) {
     printf("what is the order of your vector: ");
     printf("\n");
-    scanf("%d", n_p);
+    scanf("%d", n);
   }
   
   // broadcast n
-  MPI_Bcast(n_p, 1, MPI_INT, 0, comm);
+  MPI_Bcast(n, 1, MPI_INT, 0, comm);
   
   // check for error
-  if (*n_p < 0 || *n_p % comm_sz) {
+  if (*n < 0 || *n % comm_sz) {
   local_ok = 0;
   }
   Check_for_error(local_ok, "Read_n", "n should be > 0 and evenly divisible by comm_sz", comm);
   
   // calculate n_p
-  *local_n_p = *n_p / comm_sz;
+  *local_n = *n / comm_sz;
 }  /* Read_n */
 
 
@@ -187,7 +187,7 @@ void Print_vector(double local_vec[], int local_n, int n, char title[],
 
 
 /*-------------------------------------------------------------------*/
-double Par_dot_product(double local_vec1[], double local_vec2[],
+double Par_dot_product(const double local_vec1[], const double local_vec2[],
                        int local_n, MPI_Comm comm) {
   int local_i;
   double dot_product;
@@ -203,7 +203,7 @@ double Par_dot_product(double local_vec1[], double local_vec2[],
 
 
 /*-------------------------------------------------------------------*/
-void Par_vector_scalar_mult(double local_vec[], double scalar,
+void Par_vector_scalar_mult(const double local_vec[], double scalar,
                             double local_result[], int local_n) {
   int local_i;
   

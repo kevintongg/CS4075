@@ -7,8 +7,6 @@ void Read_n(int *n, int *local_n, int my_rank, int comm_sz, MPI_Comm comm);
 
 void Generate_data(int *prefix, int n, int local_n, int my_rank, MPI_Comm comm);
 
-void Prefix_sum(int *prefix, int *final_prefix_sum, int n, int local_n, int my_rank, MPI_Comm comm);
-
 int main(int argc, char **argv) {
   
   int my_rank;
@@ -103,39 +101,3 @@ void Generate_data(int *prefix, int n, int local_n, int my_rank, MPI_Comm comm) 
     free(data);
   }
 }
-
-void Prefix_sum(int *prefix, int *final_prefix_sum, int n, int local_n, int my_rank, MPI_Comm comm) {
-  int *data = NULL;
-  
-  if (my_rank == 0) {
-    data = malloc(local_n * sizeof(int));
-    prefix[0] = data[0];
-    
-    for (int i = 1; i < n; i++) {
-      data[i] = data[i - 1] + prefix[i];
-    }
-  }
-  
-  MPI_Scatter(final_prefix_sum, n, MPI_INT, prefix, n, MPI_INT, 0, comm);
-  
-  if (my_rank == 0) {
-    free(final_prefix_sum);
-  }
-}
-
-
-
-//  for (int j = 0; j < local_n; j++) {
-//    local_total += prefix[j];
-//    MPI_Scan(&pdf_i, &cdf_i, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
-//    final_prefix_sums[j] = cdf_i;
-//  }
-
-//  printf("%d", local_total);
-
-//  local_total = prefix[0];
-
-//  MPI_Scan(&local_total, &local_prefix_sum[0], 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
-//  MPI_Gather(&local_prefix_sum, local_n, MPI_INT, final_prefix_sums, local_n, MPI_INT, 0, comm);
-
-//  MPI_Scan(&local_total, &final_sum, local_n, MPI_INT, MPI_SUM, MPI_COMM_WORLD);

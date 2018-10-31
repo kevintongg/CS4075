@@ -11,10 +11,10 @@ void Check_for_error(int local_ok, char fname[], char message[],
 
 void Read_data(double *local_matrix, double *local_vector, int local_n, int my_rank, int comm_sz, MPI_Comm comm);
 
-void Print_vector(double local_vec[], int local_n, int n, char title[],
+void Print_vector(double local_vector[], int local_n, int n, char title[],
                   int my_rank, MPI_Comm comm);
 
-void Par_vector_addition(const double *local_matrix, const double *local_vector, double *local_result, int local_n);
+void Par_vector_addition(const double *local_vec1, const double *local_vec2, double *local_result, int local_n);
 
 int main(void) {
   int n, local_n;
