@@ -131,8 +131,8 @@ void Generate_matrix(int local_matrix[], int n, int local_n, int my_rank, MPI_Co
 //    printf("Enter your matrix\n");
     for (int i = 0; i < dim; ++i) {
 //      scanf("%d", &local_matrix[i]);
-      data[i] = rand() % 10;
-      printf("value %d: %d\n", i + 1, local_matrix[i]);
+      local_matrix[i] = rand() % 10;
+//      printf("value %d: %d\n", i + 1, local_matrix[i]);
     }
     MPI_Scatter(data, local_n, INT, local_matrix, local_n, INT, 0, comm);
     free(data);
@@ -152,8 +152,8 @@ void Generate_vector(int local_vector[], int n, int local_n, int my_rank, MPI_Co
 //    printf("Enter your vector\n");
     for (int i = 0; i < n; ++i) {
 //      scanf("%d", &local_vector[i]);
-      data[i] = rand() % 4;
-      printf("value %d: %d\n", i + 1, local_vector[i]);
+      local_vector[i] = rand() % 4;
+//      printf("value %d: %d\n", i + 1, local_vector[i]);
     }
     MPI_Scatter(data, local_n, INT, local_vector, local_n, INT, 0, comm);
     free(data);

@@ -10,13 +10,13 @@
 
 #define INT MPI_INT
 
-void Get_input(int argc, char *argv[], int myRank, long *total_num_tosses, MPI_Comm comm);
+void Get_input(int argc, char *argv[], int my_rank, int *total_num_tosses, MPI_Comm comm);
 
-long Toss(long number_of_tosses, int myRank);
+int Toss(int number_of_tosses, int my_rank);
 
 int main(int argc, char **argv) {
   int my_rank, comm_sz;
-  long total_num_tosses, num_of_tosses, num_in_circle, total_num_in_circle;
+  int total_num_tosses, num_of_tosses, num_in_circle, total_num_in_circle;
   double piEstimate;
   MPI_Comm comm = MPI_COMM_WORLD;
   
@@ -31,18 +31,19 @@ int main(int argc, char **argv) {
   MPI_Barrier(comm);
   num_in_circle = Toss(num_of_tosses, my_rank);
   
-  MPI_Reduce(&num_in_circle, &total_num_in_circle, 1, MPI_LONG, MPI_SUM, 0, comm);
+  MPI_Reduce(&num_in_circle, &total_num_in_circle, 1, MPI_INT, MPI_SUM, 0, comm);
   
   if (my_rank == 0) {
     piEstimate = (4 * total_num_in_circle) / ((double) total_num_tosses);
     printf("π is approximately %.8f\n", piEstimate);
   }
+  
   MPI_Finalize();
   return 0;
 }
 
-void Get_input(int argc, char *argv[], int myRank, long *total_num_tosses, MPI_Comm comm) {
-  if (myRank == 0) {
+void Get_input(int argc, char *argv[], int my_rank, int *total_num_tosses, MPI_Comm comm) {
+  if (my_rank == 0) {
     if (argc != 2) {
       fprintf(stderr, "usage: mpiexec -n <N> %s <number of tosses> \n", argv[0]);
       fflush(stderr);
@@ -59,18 +60,18 @@ void Get_input(int argc, char *argv[], int myRank, long *total_num_tosses, MPI_C
   }
 }
 
-long Toss(long number_of_tosses, int myRank) {
-  long toss, number_in_circle = 0;
+int Toss(int number_of_tosses, int my_rank) {
+  int num_in_circle = 0;
   double x, y, distance_squared;
   unsigned int seed = (unsigned) time(NULL);
-  srand(seed + myRank);
-  for (toss = 0; toss < number_of_tosses; toss++) {
+  srand(seed + my_rank);
+  for (int toss = 0; toss < number_of_tosses; toss++) {
     x = rand_r(&seed) / (double) RAND_MAX;
     y = rand_r(&seed) / (double) RAND_MAX;
     distance_squared = pow(x, 2) + pow(y, 2);
     if (distance_squared <= 1.0) {
-      number_in_circle++;
+      num_in_circle++;
     }
   }
-  return number_in_circle;
+  return num_in_circle;
 }
