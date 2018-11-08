@@ -5,13 +5,15 @@
 #include "timer.h"
 
 const int MAX_THREADS = 1024;
+const int MAX_MESSAGES = 64;
 
 long thread_count;
 long long n;
 double sum = 0;
 pthread_mutex_t mutex;
+char **messages;
 
-void *Thread_sum(void *rank);
+void *Producer_consumer(void *rank);
 
 /* Only executed by main thread */
 void Get_args(int argc, char *argv[]);
@@ -23,60 +25,50 @@ double Serial_pi(long long n);
 int main(int argc, char *argv[]) {
   long thread;  /* Use long in case of a 64-bit system */
   pthread_t *thread_handles;
-  double start, finish, elapsed;
   
   /* Get number of threads from command line */
   Get_args(argc, argv);
   
   thread_handles = malloc(thread_count * sizeof(pthread_t));
+  messages = malloc(thread_count * MAX_MESSAGES * sizeof(char));
   
-  GET_TIME(start);
-  printf("Serial sum: %.8lf\n", Serial_pi(n));
-  GET_TIME(finish)
-  elapsed = finish - start;
-  printf("Serial sum execution time: %.8fs\n", elapsed);
-  sum = 0;
   pthread_mutex_init(&mutex, NULL);
-  GET_TIME(start);
+  
   for (thread = 0; thread < thread_count; thread++) {
-    pthread_create(&thread_handles[thread], NULL, Thread_sum, (void *) thread);
+    pthread_create(&thread_handles[thread], NULL, Producer_consumer, (void *) thread);
   }
   for (thread = 0; thread < thread_count; thread++) {
     pthread_join(thread_handles[thread], NULL);
   }
-  sum *= 4;
-  GET_TIME(finish);
-  elapsed = finish - start;
-  
-  printf("\nThread sum: %.8lf\n", sum);
-  printf("Thread sum execution time: %.8fs\n", elapsed);
   
   free(thread_handles);
+  free(messages);
   pthread_mutex_destroy(&mutex);
   return 0;
 }  /* main */
 
 /*------------------------------------------------------------------*/
-void *Thread_sum(void *rank) {
+void *Producer_consumer(void *rank) {
   long my_rank = (long) rank;
-  double factor, my_sum = 0;
-  long long i;
-  long long my_n = n / thread_count;
-  long long my_first_i = my_n * my_rank;
-  long long my_last_i = my_first_i + my_n;
+  long destination = (my_rank + 1) % thread_count;
+  char *my_msg = malloc(MAX_MESSAGES * sizeof(char));
   
-  if (my_first_i % 2 == 0) {
-    factor = 1;
-  } else {
-    factor = -1;
-  }
+  // producer
+  pthread_mutex_lock(&mutex);
+  sprintf(my_msg, "Hello from %ld", my_rank);
+  messages[destination] = my_msg;
+  pthread_mutex_unlock(&mutex);
   
-  for (i = my_first_i; i < my_last_i; i++, factor = -factor) {
-    my_sum += factor / (2 * i + 1);
-    if (i == (my_last_i - 1)) {
-      pthread_mutex_lock(&mutex); // locked
-      sum += my_sum;
-      pthread_mutex_unlock(&mutex); // unlocked
+  while (1) {
+    // consumer
+    if (messages[my_rank] != NULL) {
+      pthread_mutex_lock(&mutex);
+      printf("Thread %ld > %s\n", my_rank, messages[my_rank]);
+      pthread_mutex_unlock(&mutex);
+      break;
+    } else { /* my_rank == producer */
+      messages[destination] = my_msg;
+      pthread_mutex_unlock(&mutex);
     }
   }
   

@@ -24,64 +24,58 @@ int main(int argc, char *argv[]) {
   long thread;  /* Use long in case of a 64-bit system */
   pthread_t *thread_handles;
   double start, finish, elapsed;
-  
   /* Get number of threads from command line */
   Get_args(argc, argv);
-  
+  //thread_count = strtol(argv[1], NULL, 10);
   thread_handles = malloc(thread_count * sizeof(pthread_t));
   
   GET_TIME(start);
-  printf("Serial sum: %.8lf\n", Serial_pi(n));
-  GET_TIME(finish)
+  printf("SERIAL VERSION: %f ", Serial_pi(thread_count));
+  GET_TIME(finish);
   elapsed = finish - start;
-  printf("Serial sum execution time: %.8fs\n", elapsed);
-  sum = 0;
+  printf("time elapsed: %f\n", elapsed);
   pthread_mutex_init(&mutex, NULL);
   GET_TIME(start);
   for (thread = 0; thread < thread_count; thread++) {
     pthread_create(&thread_handles[thread], NULL, Thread_sum, (void *) thread);
   }
+  
   for (thread = 0; thread < thread_count; thread++) {
     pthread_join(thread_handles[thread], NULL);
   }
-  sum *= 4;
   GET_TIME(finish);
   elapsed = finish - start;
   
-  printf("\nThread sum: %.8lf\n", sum);
-  printf("Thread sum execution time: %.8fs\n", elapsed);
+  double final_sum = sum * 4.0;
+  printf("estimate of pi = %.6f ", final_sum);
+  printf("time elapsed: %f\n", elapsed);
   
   free(thread_handles);
   pthread_mutex_destroy(&mutex);
   return 0;
-}  /* main */
+}
 
-/*------------------------------------------------------------------*/
 void *Thread_sum(void *rank) {
   long my_rank = (long) rank;
-  double factor, my_sum = 0;
+  double factor = 0;
   long long i;
   long long my_n = n / thread_count;
-  long long my_first_i = my_n * my_rank;
-  long long my_last_i = my_first_i + my_n;
+  long long first_i = my_n * my_rank;
+  long long last_i = first_i + my_n;;
   
-  if (my_first_i % 2 == 0) {
+  if (first_i % 2 == 0) {
     factor = 1;
   } else {
     factor = -1;
   }
   
-  for (i = my_first_i; i < my_last_i; i++, factor = -factor) {
-    my_sum += factor / (2 * i + 1);
-    if (i == (my_last_i - 1)) {
-      pthread_mutex_lock(&mutex); // locked
-      sum += my_sum;
-      pthread_mutex_unlock(&mutex); // unlocked
-    }
+  for (i = first_i; i < last_i; i++, factor = -factor) {
+    pthread_mutex_lock(&mutex);
+    sum += factor / (2 * i + 1);
+    pthread_mutex_unlock(&mutex);
   }
-  
   return NULL;
-}  /* Thread_sum */
+}
 
 /*------------------------------------------------------------------
  * Function:   Serial_pi
