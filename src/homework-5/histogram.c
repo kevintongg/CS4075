@@ -2,6 +2,8 @@
 #include "stdlib.h"
 #include "pthread.h"
 
+#define MAX_THREADS 1024
+
 long thread_count;
 long long n;
 
