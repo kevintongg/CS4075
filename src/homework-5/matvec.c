@@ -96,14 +96,16 @@ void *Pth_mat_vec(void *rank) {
   long local_n = MAX / thread_count;
   long my_first_row = my_rank * local_n;
   long my_last_row = (my_rank + 1) * local_n - 1;
-
+  int temp[MAX];
+  
   for (i = my_first_row; i <= my_last_row; i++) {
-    y[i] = 0;
+    temp[i] = 0;
     for (j = 0; j < MAX; ++j) {
-      y[i] += a[i][j] * x[j];
+      temp[i] += a[i][j] * x[j];
+      y[i] = temp[i];
     }
   }
-
+  
   return NULL;
 }  /* Thread_sum */
 
