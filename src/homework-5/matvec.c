@@ -9,9 +9,10 @@
 long thread_count;
 long long n;
 double sum;
-int a[MAX][MAX];
+int a[10][MAX];
 int x[MAX];
 int y[MAX];
+pthread_mutex_t mutex;
 
 void Gen_data();
 
@@ -46,7 +47,7 @@ int main(int argc, char *argv[]) {
   
   /* Get number of threads from command line */
   Get_args(argc, argv);
-  
+  pthread_mutex_init(&mutex, NULL);
   thread_handles = malloc(thread_count * sizeof(pthread_t));
   for (thread = 0; thread < thread_count; thread++) {
     pthread_create(&thread_handles[thread], NULL, Pth_mat_vec, (void *) thread);
@@ -54,6 +55,7 @@ int main(int argc, char *argv[]) {
   for (thread = 0; thread < thread_count; thread++) {
     pthread_join(thread_handles[thread], NULL);
   }
+  pthread_mutex_destroy(&mutex);
   
   printf("–Result–\n");
   for (int i = 0; i < MAX; ++i) {
@@ -102,7 +104,9 @@ void *Pth_mat_vec(void *rank) {
     temp[i] = 0;
     for (j = 0; j < MAX; ++j) {
       temp[i] += a[i][j] * x[j];
+//      pthread_mutex_lock(&mutex);
       y[i] = temp[i];
+//      pthread_mutex_unlock(&mutex);
     }
   }
   

@@ -9,6 +9,7 @@ long thread_count;
 long long n;
 double sum;
 double pi_estimate;
+pthread_mutex_t mutex;
 
 void *Thread_sum();
 
@@ -20,11 +21,11 @@ void Usage(char *prog_name);
 int main(int argc, char *argv[]) {
   long thread;  /* Use long in case of a 64-bit system */
   pthread_t *thread_handles;
-  double start, finish, elapsed;
   
   /* Get number of threads from command line */
   Get_args(argc, argv);
   
+  pthread_mutex_init(&mutex, NULL);
   thread_handles = malloc(thread_count * sizeof(pthread_t));
   for (thread = 0; thread < thread_count; thread++) {
     pthread_create(&thread_handles[thread], NULL, Thread_sum, (void *) thread);
@@ -32,6 +33,7 @@ int main(int argc, char *argv[]) {
   for (thread = 0; thread < thread_count; thread++) {
     pthread_join(thread_handles[thread], NULL);
   }
+  pthread_mutex_destroy(&mutex);
   
   printf("π estimate: %.8f\n", pi_estimate);
   free(thread_handles);
@@ -51,7 +53,9 @@ void *Thread_sum() {
       num_in_circle++;
     }
   }
+  pthread_mutex_lock(&mutex);
   pi_estimate = 4 * num_in_circle / (float) n;
+  pthread_mutex_unlock(&mutex);
   
   return NULL;
 }  /* Thread_sum */
