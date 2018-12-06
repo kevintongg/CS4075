@@ -79,16 +79,6 @@ void Gen_data() {
   }
 }
 
-//void *Pth_mat_vec(void *rank) {
-//  int temp = step++;
-//  for (int i = temp * MAX / 4; i < (temp + 1) * MAX; ++i) {
-//    y[i] = 0;
-//    for (int j = 0; j < MAX; ++j) {
-//      y[i] += a[i][j] * x[j];
-//    }
-//  }
-//  return NULL;
-//}
 
 /*------------------------------------------------------------------*/
 void *Pth_mat_vec(void *rank) {
@@ -104,9 +94,9 @@ void *Pth_mat_vec(void *rank) {
     temp[i] = 0;
     for (j = 0; j < MAX; ++j) {
       temp[i] += a[i][j] * x[j];
-//      pthread_mutex_lock(&mutex);
+      pthread_mutex_lock(&mutex);
       y[i] = temp[i];
-//      pthread_mutex_unlock(&mutex);
+      pthread_mutex_unlock(&mutex);
     }
   }
   

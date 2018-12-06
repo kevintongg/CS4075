@@ -13,7 +13,7 @@ void Get_input(
     int comm_sz, // in
     double *a_p, // out
     double *b_p, // out
-    int *n_p);    // out
+    int *n_p);   // out
 
 int main(void) {
   int my_rank, comm_sz, n, local_n;
